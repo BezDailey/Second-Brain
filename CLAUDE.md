@@ -8,10 +8,39 @@ SecondBrain — RAG-powered knowledge system over an Obsidian vault. Ingests mar
 
 ## Tech Stack
 
-- **Backend:** Python · FastAPI · LlamaIndex · ChromaDB
-- **Frontend:** React (Vite + TypeScript)
-- **Vector store:** ChromaDB
-- **RAG framework:** LlamaIndex
+- **Backend:** Python · FastAPI · LlamaIndex
+- **Vector Store:** ChromaDB
+- **Frontend:** React · Vite · TypeScript
+
+## Architecture
+
+```
+Obsidian Vault → Ingestion Pipeline → ChromaDB
+                                          ↓
+React Chat UI ↔ FastAPI (LlamaIndex RAG Query Engine)
+```
+
+- **Ingestion:** Reads Obsidian markdown, parses frontmatter/wikilinks, chunks via LlamaIndex node parsers, stores embeddings + metadata in ChromaDB
+- **Query:** FastAPI exposes `/api/query` — LlamaIndex retrieves relevant chunks from ChromaDB, synthesizes a grounded answer with source citations
+- **Evaluation:** CLI pipeline scores retrieval precision@k, recall@k, MRR, faithfulness, and relevance against annotated Q&A datasets
+
+## Project Structure (planned)
+
+```
+├── server/          # FastAPI backend
+│   ├── app/         # API routes, dependencies
+│   ├── ingestion/   # Vault reader, chunking, embedding
+│   ├── engine/      # LlamaIndex query engine config
+│   └── eval/        # Evaluation pipeline
+├── client/          # React frontend (Vite)
+└── data/            # Evaluation datasets
+```
+
+## Commands (once scaffolded)
+
+- `make dev` — run backend + frontend concurrently
+- `python -m secondbrain ingest --vault-path <path>` — ingest Obsidian vault
+- `python -m secondbrain evaluate --dataset <path>` — run evaluation pipeline
 
 ## Repository
 
