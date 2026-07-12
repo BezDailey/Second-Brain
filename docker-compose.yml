@@ -1,0 +1,9 @@
+services:
+  chroma:
+    image: chromadb/chroma:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./data/chroma:/data
+    environment:
+      - IS_PERSISTENT=TRUE
