@@ -19,10 +19,13 @@ def configure() -> None:
     Settings.node_parser = SentenceSplitter(chunk_size=512, chunk_overlap=50)
 
 
-def get_vector_store() -> ChromaVectorStore:
+def get_collection():
     client = chromadb.HttpClient(host=settings.chroma_host, port=settings.chroma_port)
-    collection = client.get_or_create_collection(COLLECTION_NAME)
-    return ChromaVectorStore(chroma_collection=collection)
+    return client.get_or_create_collection(COLLECTION_NAME)
+
+
+def get_vector_store() -> ChromaVectorStore:
+    return ChromaVectorStore(chroma_collection=get_collection())
 
 
 def _content_hash(text: str) -> str:

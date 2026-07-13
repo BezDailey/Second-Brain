@@ -13,7 +13,7 @@ def read_vault(vault_path: str) -> list[Document]:
     for path in Path(vault_path).rglob("*.md"):
         if any(part in EXCLUDED_DIRS for part in path.parts):
             continue
-        raw = path.read_text(encoding="utf-8")
+        raw = path.read_text(encoding="utf-8", errors="ignore")
         content, note_meta = parse_note(raw)
         documents.append(
             Document(
@@ -30,11 +30,16 @@ def read_vault(vault_path: str) -> list[Document]:
 
 
 def parse_note(text: str) -> tuple[str, dict]:
-    post = frontmatter.loads(text)
-    content = post.content
+    try:
+        post = frontmatter.loads(text)
+        content = post.content
+        fm = post.metadata
+    except Exception:
+        # Malformed YAML frontmatter: treat the note as plain text, no metadata.
+        content = text
+        fm = {}
     metadata: dict = {}
 
-    fm = post.metadata
     for key in ("tags", "aliases"):
         if key in fm:
             value = fm[key]
