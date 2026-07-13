@@ -20,6 +20,8 @@ build/
 # Python
 __pycache__/
 *.pyc
+.ruff_cache/
 
 # Data / vector store
 data/chroma/
+data/ingest_manifest.json
