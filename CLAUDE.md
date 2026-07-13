@@ -24,26 +24,41 @@ React Chat UI ↔ FastAPI (LlamaIndex RAG Query Engine)
 - **Query:** FastAPI exposes `/api/query` — LlamaIndex retrieves relevant chunks from ChromaDB, synthesizes a grounded answer with source citations
 - **Evaluation:** CLI pipeline scores retrieval precision@k, recall@k, MRR, faithfulness, and relevance against annotated Q&A datasets
 
-## Project Structure (planned)
+## Project Structure
 
 ```
-├── server/          # FastAPI backend
-│   ├── app/         # API routes, dependencies
-│   ├── ingestion/   # Vault reader, chunking, embedding
-│   ├── engine/      # LlamaIndex query engine config
-│   └── eval/        # Evaluation pipeline
-├── client/          # React frontend (Vite)
-└── data/            # Evaluation datasets
+├── server/               # FastAPI backend (uv-managed, Python 3.12)
+│   ├── app/              # ✅ main.py (routes), config.py (pydantic-settings)
+│   ├── ingestion/        # (planned) Vault reader, chunking, embedding
+│   ├── engine/           # (planned) LlamaIndex query engine config
+│   ├── eval/             # (planned) Evaluation pipeline
+│   ├── pyproject.toml    # ✅ deps (uv) + ruff config
+│   └── .env.example      # ✅ config template (no API keys)
+├── client/               # ✅ React frontend (Vite + TS, ESLint + Prettier)
+├── data/                 # Chroma persistence + evaluation datasets
+├── docker-compose.yml    # ✅ local ChromaDB service
+└── Makefile              # ✅ make dev / backend / frontend
 ```
 
-## Commands (once scaffolded)
+## Local Models (no API keys)
 
-- `make dev` — run backend + frontend concurrently
-- `python -m secondbrain ingest --vault-path <path>` — ingest Obsidian vault
-- `python -m secondbrain evaluate --dataset <path>` — run evaluation pipeline
+The stack runs entirely on local models: [Ollama](https://ollama.com) for the LLM
+(`ollama pull llama3.1`) and a local HuggingFace embedding model
+(`BAAI/bge-small-en-v1.5`, downloads on first use). All config lives in `server/.env`
+(see `server/.env.example`).
+
+## Commands
+
+- `make dev` — run backend + frontend concurrently (backend :8000, frontend :5173)
+- `make backend` / `make frontend` — run one half
+- `docker compose up -d chroma` — start local ChromaDB (:8001)
+- `cd server && uv run ruff check . && uv run ruff format .` — lint/format backend
+- `cd client && npm run format` — format frontend (Prettier)
+- `python -m secondbrain ingest --vault-path <path>` — (planned) ingest Obsidian vault
+- `python -m secondbrain evaluate --dataset <path>` — (planned) run evaluation pipeline
 
 ## Repository
 
-- **Remote:** https://github.com/BezDailey/SecondBrain
+- **Remote:** https://github.com/BezDailey/Second-Brain
 - **Branch:** main
 - **Project board:** https://github.com/users/BezDailey/projects/3
