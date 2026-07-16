@@ -1,7 +1,7 @@
 [project]
 name = "server"
 version = "0.1.0"
-description = "Add your description here"
+description = "SecondBrain backend — RAG API and ingestion over an Obsidian vault"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

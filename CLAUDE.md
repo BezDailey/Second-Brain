@@ -4,61 +4,78 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-SecondBrain — RAG-powered knowledge system over an Obsidian vault. Ingests markdown notes to make concepts, daily logs, and learning plans searchable and conversational. Includes an annotation evaluation pipeline that measures retrieval precision and answer quality.
+SecondBrain — RAG over an Obsidian vault: ingest markdown notes, then query them conversationally with cited sources. An annotation-based evaluation pipeline is planned (see Roadmap).
 
 ## Tech Stack
 
-- **Backend:** Python · FastAPI · LlamaIndex
-- **Vector Store:** ChromaDB
-- **Frontend:** React · Vite · TypeScript
+- **Backend:** Python 3.12 · FastAPI · LlamaIndex (uv-managed)
+- **Vector store:** ChromaDB (runs as a separate service)
+- **LLM / embeddings:** Ollama (`llama3.1`) + local HuggingFace embeddings (`BAAI/bge-small-en-v1.5`) — no API keys
+- **Frontend:** React 19 · Vite · TypeScript
 
 ## Architecture
 
 ```
-Obsidian Vault → Ingestion Pipeline → ChromaDB
-                                          ↓
-React Chat UI ↔ FastAPI (LlamaIndex RAG Query Engine)
+Obsidian Vault → vault_reader → indexer → ChromaDB
+                                             ↓
+React Chat UI ──/api/query──▶ app.main ──▶ engine (LlamaIndex query)
 ```
 
-- **Ingestion:** Reads Obsidian markdown, parses frontmatter/wikilinks, chunks via LlamaIndex node parsers, stores embeddings + metadata in ChromaDB
-- **Query:** FastAPI exposes `/api/query` — LlamaIndex retrieves relevant chunks from ChromaDB, synthesizes a grounded answer with source citations
-- **Evaluation:** CLI pipeline scores retrieval precision@k, recall@k, MRR, faithfulness, and relevance against annotated Q&A datasets
+- **Ingestion (CLI):** `vault_reader` reads markdown, parses YAML frontmatter (tags, aliases, date) and `[[wikilinks]]`; `indexer` chunks with `SentenceSplitter` (512/50) and upserts embeddings + metadata into Chroma. Ingestion is **incremental** — a content-hash manifest at `data/ingest_manifest.json` drives add/update/skip.
+- **Query (API):** `POST /api/query` → `engine` builds an LRU-cached `VectorStoreIndex` over the Chroma collection, retrieves `similarity_top_k=5`, and synthesizes a grounded answer (`response_mode="compact"`). Optional metadata `filters` (e.g. `{"title": ...}`, `{"tags": ...}`) narrow retrieval.
 
-## Project Structure
+## Where things live
 
-```
-├── server/               # FastAPI backend (uv-managed, Python 3.12)
-│   ├── app/              # ✅ main.py (routes), config.py (pydantic-settings)
-│   ├── ingestion/        # (planned) Vault reader, chunking, embedding
-│   ├── engine/           # (planned) LlamaIndex query engine config
-│   ├── eval/             # (planned) Evaluation pipeline
-│   ├── pyproject.toml    # ✅ deps (uv) + ruff config
-│   └── .env.example      # ✅ config template (no API keys)
-├── client/               # ✅ React frontend (Vite + TS, ESLint + Prettier)
-├── data/                 # Chroma persistence + evaluation datasets
-├── docker-compose.yml    # ✅ local ChromaDB service
-└── Makefile              # ✅ make dev / backend / frontend
-```
+The backend has **two importable packages under `server/`**, and both are run from the `server/` directory:
+
+- **`app/`** — web layer. `main.py` (FastAPI routes) and `config.py` (`pydantic-settings`, reads `server/.env`).
+- **`secondbrain/`** — RAG core. `vault_reader.py`, `indexer.py`, `engine.py`, and `__main__.py` (the `ingest` CLI).
+
+They depend on each other: `app.main` imports from `secondbrain`, and `secondbrain` imports config from `app.config`. Other paths worth knowing: the ingest manifest lives at `data/ingest_manifest.json`, and the frontend chat UI is `client/src/App.tsx` (metadata filter by title/tag).
+
+## API Endpoints (`server/app/main.py`)
+
+- `GET  /api/health` — liveness check
+- `GET  /api/config` — active `ollama_model` and `chroma_port`
+- `POST /api/query` — `{ question, filters? }` → `{ answer, sources[] }` (each source: `title`, `content_snippet`, `metadata`)
+- `GET  /api/sources/{source_id}` — reassemble a note's chunks from Chroma by `title` (404 if none)
+
+CORS allows `http://localhost:5173`. In dev, Vite proxies `/api` → `http://localhost:8000` (`client/vite.config.ts`).
 
 ## Local Models (no API keys)
 
-The stack runs entirely on local models: [Ollama](https://ollama.com) for the LLM
-(`ollama pull llama3.1`) and a local HuggingFace embedding model
-(`BAAI/bge-small-en-v1.5`, downloads on first use). All config lives in `server/.env`
-(see `server/.env.example`).
+The stack runs entirely on local models: [Ollama](https://ollama.com) for the LLM (`ollama pull llama3.1`, served at `:11434`) and a local HuggingFace embedding model (downloads on first use). All config lives in `server/.env` (copy from `server/.env.example`).
 
 ## Commands
 
 - `make dev` — run backend + frontend concurrently (backend :8000, frontend :5173)
-- `make backend` / `make frontend` — run one half
-- `docker compose up -d chroma` — start local ChromaDB (:8001)
+- `make backend` / `make frontend` — run one half (each frees its port first)
+- `docker compose up -d chroma` — start local ChromaDB (host :8001 → container :8000)
+- `python -m secondbrain ingest --vault-path <path>` — ingest a vault (run from `server/`; defaults to `VAULT_PATH` in `.env`)
 - `cd server && uv run ruff check . && uv run ruff format .` — lint/format backend
 - `cd client && npm run format` — format frontend (Prettier)
-- `python -m secondbrain ingest --vault-path <path>` — (planned) ingest Obsidian vault
-- `python -m secondbrain evaluate --dataset <path>` — (planned) run evaluation pipeline
+- `cd client && npm run lint` — lint frontend (ESLint)
+- `cd client && npm run build` — type-check (`tsc -b`) + production build
+
+To serve queries end to end: ChromaDB running, Ollama running with the model pulled, and a vault ingested at least once.
+
+## Conventions
+
+- **Backend:** ruff-formatted, line length 100, lint rules `E,F,I` (import sorting on). Config via `pydantic-settings` — add new settings to `app/config.py` and `.env.example`; never hardcode.
+- **Ingestion is idempotent:** re-running `ingest` only re-embeds changed notes (md5 content hash). Delete `data/ingest_manifest.json` to force re-ingest.
+- **The query index is LRU-cached** for the process lifetime — restart the backend to pick up newly ingested notes.
+- **Frontend:** Prettier-formatted, TypeScript strict; talks to the API only through the `/api` proxy (no hardcoded backend URL).
+
+## Contributing
+
+All code changes to `main` go through pull requests — never commit directly to `main`. Branch, push, and open a PR.
+
+## Roadmap
+
+- **Evaluation pipeline (planned):** score retrieval and answer quality against annotated Q&A datasets. Not yet implemented.
 
 ## Repository
 
 - **Remote:** https://github.com/BezDailey/Second-Brain
-- **Branch:** main
+- **Default branch:** main
 - **Project board:** https://github.com/users/BezDailey/projects/3
