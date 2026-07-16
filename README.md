@@ -27,6 +27,8 @@ RAG-powered knowledge system over an Obsidian vault. Ingests markdown notes to m
                      └─────────────┘
 ```
 
+For a full walkthrough of both data flows, the code reading order, and the design rationale, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 ## Features
 
 - **Vault ingestion** — parses Obsidian markdown (frontmatter, wikilinks, callouts), chunks documents, and stores embeddings with metadata
