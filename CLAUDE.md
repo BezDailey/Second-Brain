@@ -78,6 +78,8 @@ All code changes to `main` go through pull requests — never commit directly to
 
 **Authorship:** Commits are authored under the repo owner's git identity (`BezDailey <jabezdailey@icloud.com>`), never an AI/assistant identity. Do not add `Co-Authored-By` trailers, "Generated with …" footers, or similar attribution to commit messages or PR descriptions. Use conventional branch prefixes (`docs/`, `feat/`, `fix/`) — not tool-named prefixes.
 
+**Commit messages:** Follow [Conventional Commits](https://www.conventionalcommits.org) — `type(scope): summary`, with an imperative, lowercase summary kept to ~50 characters. Allowed types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`, `build`, `perf`, `style`. The scope is optional (e.g. `docs(readme):`, `feat(engine):`). Mark a breaking change with `type!:` or a `BREAKING CHANGE:` footer. Example: `fix(indexer): skip notes with unchanged content hash`. (This matches the branch prefixes above and, once tooling lands, is enforced by commitlint and a PR-title check.)
+
 ## Roadmap
 
 - **Evaluation pipeline (planned):** score retrieval and answer quality against annotated Q&A datasets. Not yet implemented.
