@@ -70,6 +70,8 @@ To serve queries end to end: ChromaDB running, Ollama running with the model pul
 
 All code changes to `main` go through pull requests — never commit directly to `main`. Branch, push, and open a PR.
 
+**Authorship:** Commits are authored under the repo owner's git identity (`BezDailey <jabezdailey@icloud.com>`), never an AI/assistant identity. Do not add `Co-Authored-By` trailers, "Generated with …" footers, or similar attribution to commit messages or PR descriptions. Use conventional branch prefixes (`docs/`, `feat/`, `fix/`) — not tool-named prefixes.
+
 ## Roadmap
 
 - **Evaluation pipeline (planned):** score retrieval and answer quality against annotated Q&A datasets. Not yet implemented.
