@@ -66,6 +66,12 @@ To serve queries end to end: ChromaDB running, Ollama running with the model pul
 - **The query index is LRU-cached** for the process lifetime — restart the backend to pick up newly ingested notes.
 - **Frontend:** Prettier-formatted, TypeScript strict; talks to the API only through the `/api` proxy (no hardcoded backend URL).
 
+### Documentation style
+
+- **Python (`server/`):** Google-style docstrings (PEP 257) on public modules, classes, and functions — a summary line plus `Args:` / `Returns:` / `Raises:` as needed. Types live in the signature; don't repeat them in the docstring. FastAPI route docstrings surface in the auto-generated `/docs` (OpenAPI) page, so write them for that audience.
+- **TypeScript (`client/`):** TSDoc comments on exported functions and types — a summary plus `@param` / `@returns` / `@throws`. Keep types in the signature, not in the tags (TypeScript already has them).
+- **Config files** (`pyproject.toml`, `docker-compose.yml`, `Makefile`, `.env.example`): plain `#` comments only — no doc-comment convention applies. `package.json` is strict JSON and takes no comments.
+
 ## Contributing
 
 All code changes to `main` go through pull requests — never commit directly to `main`. Branch, push, and open a PR.
