@@ -1,6 +1,6 @@
 # Second Brain
 
-RAG-powered knowledge system over an Obsidian vault. Ingests markdown notes to make concepts, daily logs, and learning plans searchable and conversational. Includes an annotation evaluation pipeline that measures retrieval precision and answer quality.
+RAG-powered knowledge system over an Obsidian vault. Ingests markdown notes to make concepts, daily logs, and learning plans searchable and conversational, with cited sources. An annotation-based evaluation pipeline is planned (see [Roadmap](#roadmap)).
 
 ## Tech Stack
 
@@ -27,12 +27,18 @@ RAG-powered knowledge system over an Obsidian vault. Ingests markdown notes to m
                      └─────────────┘
 ```
 
+For a full walkthrough of both data flows, the code reading order, and the design rationale, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 ## Features
 
-- **Vault ingestion** — parses Obsidian markdown (frontmatter, wikilinks, callouts), chunks documents, and stores embeddings with metadata
+- **Vault ingestion** — parses Obsidian markdown (YAML frontmatter and `[[wikilinks]]`), chunks documents, and stores embeddings with metadata
 - **Conversational search** — ask natural language questions and get answers grounded in your notes with source citations
-- **Metadata filtering** — narrow queries by tags, date range, or note type
-- **Evaluation pipeline** — measures retrieval precision@k, recall@k, MRR, faithfulness, and answer relevance against annotated Q&A pairs
+- **Metadata filtering** — narrow queries by note metadata (e.g. title or tag)
+- **Incremental ingest** — re-running ingestion only re-embeds changed notes (content-hash manifest)
+
+## Roadmap
+
+- **Evaluation pipeline** _(planned)_ — score retrieval and answer quality (precision@k, recall@k, MRR, faithfulness, relevance) against annotated Q&A datasets. Not yet implemented.
 
 ## Getting Started
 
