@@ -1,17 +1,28 @@
 import { useState, useRef, useEffect } from "react";
 
+/** A retrieved chunk cited in an assistant answer, as returned by `/api/query`. */
 type Source = {
   title: string;
   content_snippet: string;
   metadata: Record<string, unknown>;
 };
 
+/** A single turn in the chat thread. Assistant turns may carry their sources. */
 type Message = {
   role: "user" | "assistant";
   content: string;
   sources?: Source[];
 };
 
+/**
+ * Root chat view for SecondBrain.
+ *
+ * Renders the message thread and an input form, and lets the user optionally
+ * scope a question to notes matching a metadata filter (title or tag) before
+ * sending it to the RAG backend.
+ *
+ * @returns The chat interface element.
+ */
 function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -24,6 +35,16 @@ function App() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  /**
+   * Submit the current question to `/api/query` and append the reply.
+   *
+   * Trims the input, applies the active metadata filter if one is set, and
+   * pushes both the user turn and the assistant turn onto the thread. Empty
+   * responses and request failures are surfaced as assistant messages rather
+   * than thrown.
+   *
+   * @param e - The form submit event; its default is prevented.
+   */
   async function sendQuestion(e: React.FormEvent) {
     e.preventDefault();
     const question = input.trim();
