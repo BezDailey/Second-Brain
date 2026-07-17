@@ -80,6 +80,25 @@ All code changes to `main` go through pull requests — never commit directly to
 
 **Commit messages:** Follow [Conventional Commits](https://www.conventionalcommits.org) — `type(scope): summary`, with an imperative, lowercase summary kept to ~50 characters. Allowed types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`, `build`, `perf`, `style`. The scope is optional (e.g. `docs(readme):`, `feat(engine):`). Mark a breaking change with `type!:` or a `BREAKING CHANGE:` footer. Example: `fix(indexer): skip notes with unchanged content hash`. (This matches the branch prefixes above and, once tooling lands, is enforced by commitlint and a PR-title check.)
 
+## Issue & Task Workflow (Epic → Task hierarchy)
+
+All issues on the GitHub project board follow an **Epic → Task** hierarchy.
+
+The project board uses two classification fields:
+- **Hierarchy** — `Epic` (top-level grouping) or `Task` (individual work item under an Epic). Epics use GitHub's sub-issues feature to track child tasks.
+- **Type** — the work type: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `ci`, `style`, `perf`. Matches the commit/branch prefix. All issues (both epics and tasks) must have a Type.
+
+**When creating a new issue**, always:
+1. Assign a work-type label (`feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `ci`, `style`, `perf`)
+2. Find the appropriate parent Epic and add the new issue as a sub-issue. If no fitting Epic exists, create one first (label it `epic`, set Hierarchy to "Epic" on the project board)
+3. Add the issue to the "Second Brain" project board (project #3) and set the "Hierarchy" field (`Epic` or `Task`), the "Type" field to match the label, a "Start Date", and a "Target Date"
+4. Set the "Status" field (`Todo`, `In Progress`, or `Done`)
+
+**Current Epics:**
+- #34 Epic: Core RAG Pipeline — ingestion, query, chat, eval, search
+- #35 Epic: Infrastructure & Quality — CI, testing, linting, type-checking
+- #36 Epic: Documentation & Standards — docstrings, license, PR template, merge strategy
+
 ## Roadmap
 
 - **Evaluation pipeline (planned):** score retrieval and answer quality against annotated Q&A datasets. Not yet implemented.
