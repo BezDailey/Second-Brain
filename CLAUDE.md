@@ -94,11 +94,6 @@ The project board uses two classification fields:
 3. Add the issue to the "Second Brain" project board (project #3) and set the "Hierarchy" field (`Epic` or `Task`), the "Type" field to match the label, a "Start Date", and a "Target Date"
 4. Set the "Status" field (`Todo`, `In Progress`, or `Done`)
 
-**Current Epics:**
-- #34 Epic: Core RAG Pipeline — ingestion, query, chat, eval, search
-- #35 Epic: Infrastructure & Quality — CI, testing, linting, type-checking
-- #36 Epic: Documentation & Standards — docstrings, license, PR template, merge strategy
-
 ## Roadmap
 
 - **Evaluation pipeline (planned):** score retrieval and answer quality against annotated Q&A datasets. Not yet implemented.
